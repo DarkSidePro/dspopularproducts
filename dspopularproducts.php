@@ -68,6 +68,9 @@ class Dspopularproducts extends Module
         return parent::install() &&
             $this->registerHook('header') &&
             $this->registerHook('backOfficeHeader') &&
+            $this->registerHook('actionProductSave') &&
+            $this->registerHook('actionProductUpdate') &&
+            $this->registerHook('displayAdminProductsExtra') &&
             $this->registerHook('displayHome');
     }
 
@@ -219,12 +222,88 @@ class Dspopularproducts extends Module
      */
     public function hookHeader()
     {
-        $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
+        $this->context->controller->addCSS($this->_path.'/views/css/owl.carousel.min.css');
+        $this->context->controller->addCSS($this->_path.'/views/css/owl.theme.default.min.css');
+        $this->context->controller->addJS($this->_path.'/views/js/owl.carousel.min.js');
+        $this->context->controller->addJS($this->_path.'/views/js/front.js');
+
+
+
+        $this->context->controller->registerJavascript(1, $this->_path.'/views/js/owl.carousel.min.js');
+        $this->context->controller->registerJavascript(4, $this->_path.'/views/js/front.js'); 
+        $this->context->controller->registerStylesheet(1, $this->_path.'/views/css/front.css');
+        $this->context->controller->registerStylesheet(2, $this->_path.'/views/css/owl.carousel.min.css');
+        $this->context->controller->registerStylesheet(3, $this->_path.'/views/css/owl.theme.default.min.css');
     }
 
     public function hookDisplayHome()
     {
-        /* Place your code here. */
+        $productsIds = $this->getProducts();
+        $productsData = array();
+        $id_lang = $this->context->cookie->id_lang;
+
+        foreach ($productsIds as $product) {
+            $productId = $product['product_id'];
+            $productDetails = $this->getProductDetails($productId, $id_lang);
+            $productName = $productDetails->name;
+            $productLink = $this->context->link->getProductLink($productId);
+            $image = Product::getCover($productId);
+            $imageurl = $this->context->link->getImageLink($productDetails->link_rewrite, $image['id_image'], 'home_default');
+
+            $productPriceNetto = Product::getPriceStatic($productId, false);
+            $productPriceBrutto = Product::getPriceStatic($productId, true);
+
+            array_push($productsData, [
+                'product_name' => $productName, 
+                'product_image' => $imageurl, 
+                'product_id' => $productId, 
+                'product_price_netto' => Tools::displayPrice($productPriceNetto), 
+                'product_price_brutto' => Tools::displayPrice($productPriceBrutto),
+                'product_link' => $productLink
+                ]
+            );
+        }
+
+        $this->context->smarty->assign('products', $productsData);
+
+        return $this->display(__FILE__, 'displayHome.tpl');
+    }
+
+    protected function getProducts(): array
+    {
+        $sql = new DbQuery;
+        $sql->select('*')
+            ->from('dspopularproducts')
+            ->orderBy('position DESC');
+
+        $result = Db::getInstance()->executeS($sql);      
+
+        return $result;
+    }
+
+    protected function getProductDetails(int $id_product, int $id_lang): Product
+    {
+        $product = new Product($id_product, false, $id_lang);
+
+        return $product;
+    }
+
+    protected function deleteData(int $id): void
+    {
+        $dspopularproduct = new DSPopularProduct($id);
+        $dspopularproduct->delete();
+
+    }
+
+    protected function createPopularProduct(int $id_product, int $status, int $position = 0): int
+    {
+        $dspopularproduct = new DSPopularProduct();
+        $dspopularproduct->id_product = $id_product;
+        $dspopularproduct->status = $status;
+        $dspopularproduct->position = $position;
+        $dspopularproduct->add();
+
+        return $dspopularproduct->id;
     }
 }
