@@ -71,6 +71,7 @@ class Dspopularproducts extends Module
             $this->registerHook('actionProductSave') &&
             $this->registerHook('actionProductUpdate') &&
             $this->registerHook('displayAdminProductsExtra') &&
+            $this->registerHook('actionProductDelete') &&
             $this->registerHook('displayHome');
     }
 
@@ -307,16 +308,59 @@ class Dspopularproducts extends Module
         return $dspopularproduct->id;
     }
 
-    public function hookActionProductSave()
+    protected function updateData(int $id_product, int $status, int $position = 0): int
     {
+        $sql = new DbQuery;
+        $sql->select('id')
+            ->from('dspopularproducts')
+            ->where('id_product ='.$id_product);
 
-    }
-    public function hookActionProductUpdate()
-    {
+        $result = Db::getInstance()->executeS($sql); 
 
+        $dspopularproduct = new DSPopularProduct($result[0]['id']);
+        $dspopularproduct->status = $status;
+        $dspopularproduct->position = $position;
+        $dspopularproduct->update();
+
+        return $dspopularproduct->id;
     }
-    public function hookDisplayAdminProductsExtra()
+
+    public function hookActionProductSave($params)
     {
+        $id_product = $params['id_product'];
+
+        $status = (int) Tools::getValue('dsppStatus');
+        $this->createPopularProduct($id_product, $status);
+    }
+
+    public function hookActionProductUpdate($params)
+    {
+        $id_product = $params['id_product'];
+        $status = (int) Tools::getValue('dsppStatus');
+
+        $this->updateData($id_product, $status);
+    }
+
+    public function hookDisplayAdminProductsExtra($params)
+    {
+        $this->context->smarty->fetch($this->local_path.'views/templates/hook/displayAdminProductsExtra.tpl');
+    }
+
+    protected function getDSPopularProductByIdProduct(int $id_product): int
+    {
+        $sql = new DbQuery;
+        $sql->select('id')
+            ->from('dspopularproducts')
+            ->where('id_product ='.$id_product);
+
+        $result = Db::getInstance()->executeS($sql); 
         
+        return $result[0]['id'];
+    }
+
+    public function hookActionProductDelete($params)
+    {
+        $id_product = $params['id_product'];
+        $this->deleteData($id_product);
     }
 }
