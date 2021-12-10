@@ -64,7 +64,8 @@ class Dspopularproducts extends Module
         Configuration::updateValue('DSPOPULARPRODUCTS_LIVE_MODE', false);
 
         include(dirname(__FILE__).'/sql/install.php');
-
+        $this->genereteFreshData();
+        
         return parent::install() &&
             $this->registerHook('header') &&
             $this->registerHook('backOfficeHeader') &&
@@ -78,10 +79,25 @@ class Dspopularproducts extends Module
     public function uninstall()
     {
         Configuration::deleteByName('DSPOPULARPRODUCTS_LIVE_MODE');
+        $this->deleteAllData();
 
         include(dirname(__FILE__).'/sql/uninstall.php');
 
         return parent::uninstall();
+    }
+
+    protected function deleteAllData()
+    {
+        $db = \Db::getInstance();
+        $sql = 'DELETE FROM '._DB_PREFIX_.'dspopularproducts';
+        $result = $db->executeS($sql);
+    }
+
+    protected function genereteFreshData()
+    {
+        $db = \Db::getInstance();
+        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'dspopularproducts (id_product, status, position) SELECT id_product, 0, 0 FROM ' . _DB_PREFIX_ . 'product';
+        $result = $db->executeS($sql);
     }
 
     /**
