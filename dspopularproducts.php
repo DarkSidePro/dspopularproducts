@@ -306,4 +306,17 @@ class Dspopularproducts extends Module
 
         return $dspopularproduct->id;
     }
+
+    public function hookActionProductSave()
+    {
+
+    }
+    public function hookActionProductUpdate()
+    {
+
+    }
+    public function hookDisplayAdminProductsExtra()
+    {
+        
+    }
 }
