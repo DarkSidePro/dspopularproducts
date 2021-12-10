@@ -97,7 +97,7 @@ class Dspopularproducts extends Module
     {
         $db = \Db::getInstance();
         $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'dspopularproducts (id_product, status, position) SELECT id_product, 0, 0 FROM ' . _DB_PREFIX_ . 'product';
-        $result = $db->executeS($sql);
+        $result = $db->execute($sql);
     }
 
     /**
