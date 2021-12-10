@@ -65,7 +65,7 @@ class Dspopularproducts extends Module
 
         include(dirname(__FILE__).'/sql/install.php');
         $this->genereteFreshData();
-        
+
         return parent::install() &&
             $this->registerHook('header') &&
             $this->registerHook('backOfficeHeader') &&
@@ -90,7 +90,7 @@ class Dspopularproducts extends Module
     {
         $db = \Db::getInstance();
         $sql = 'DELETE FROM '._DB_PREFIX_.'dspopularproducts';
-        $result = $db->executeS($sql);
+        $result = $db->execute($sql);
     }
 
     protected function genereteFreshData()
