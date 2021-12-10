@@ -261,7 +261,7 @@ class Dspopularproducts extends Module
         $id_lang = $this->context->cookie->id_lang;
 
         foreach ($productsIds as $product) {
-            $productId = $product['product_id'];
+            $productId = $product['id_product'];
             $productDetails = $this->getProductDetails($productId, $id_lang);
             $productName = $productDetails->name;
             $productLink = $this->context->link->getProductLink($productId);
@@ -292,7 +292,8 @@ class Dspopularproducts extends Module
         $sql = new DbQuery;
         $sql->select('*')
             ->from('dspopularproducts')
-            ->orderBy('position DESC');
+            ->orderBy('position DESC')
+            ->where('status = 1');
 
         $result = Db::getInstance()->executeS($sql);      
 
