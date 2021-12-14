@@ -22,3 +22,33 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
+<div class='card card-body mt-1 p-1'>
+    <h2 class='text-center h3'>{l s='Popular products' mods='dspopularproducts'}</h2>
+    <div class="owl-carousel owl-theme">
+        {$products|var_dump}
+        {foreach $products as $product}
+            <div class="item product--item">
+                <article class="product-miniature js-product-miniature" data-id-product="{$product.product_id}" data-id-product-attribute="0" itemscope="" itemtype="http://schema.org/Product">
+                    <div class="thumbnail-container">
+                        <a href="{$product.product_link}" class="thumbnail product-thumbnail">
+                            <img src="{$product.product_image}" alt="{$product.product_name|truncate:30:'...'}" data-full-size-image-url="{$product.product_image}">
+                        </a>
+                        <div class="product-description">
+                            <h1 class="h3 product-title" itemprop="name">
+                                <a href="{$product.product_link}">
+                                    {$product.product_name|truncate:30:'...'}
+                                </a>
+                            </h1>
+                            <div class="product-price-and-shipping">
+                                <span class="sr-only">Cena</span>
+                                {$product.product_price_netto}
+                                <br>
+                                <span class="netto">{$product.product_price_brutto} {l s='Brutto' mod='dsothersalsobought'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        {/foreach}
+    </div>
+</div>
