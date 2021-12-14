@@ -25,7 +25,6 @@
 <div class='card card-body mt-1 p-1'>
     <h2 class='text-center h3'>{l s='Popular products' mods='dspopularproducts'}</h2>
     <div class="owl-carousel owl-theme">
-        {$products|var_dump}
         {foreach $products as $product}
             <div class="item product--item">
                 <article class="product-miniature js-product-miniature" data-id-product="{$product.product_id}" data-id-product-attribute="0" itemscope="" itemtype="http://schema.org/Product">
