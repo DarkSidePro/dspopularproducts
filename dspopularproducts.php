@@ -63,7 +63,7 @@ class Dspopularproducts extends Module
      */
     public function install()
     {
-        Configuration::updateValue('DSPOPULARPRODUCTS_LIVE_MODE', false);
+        Configuration::updateValue('DSPOPULARPRODUCTS_VIEW', false);
 
         include(dirname(__FILE__).'/sql/install.php');
         $this->genereteFreshData();
@@ -194,7 +194,7 @@ class Dspopularproducts extends Module
     protected function getConfigFormValues()
     {
         return array(
-            'DSPOPULARPRODUCTS_LIVE_MODE' => Configuration::get('DSPOPULARPRODUCTS_VIEW', true),
+            'DSPOPULARPRODUCTS_VIEW' => Configuration::get('DSPOPULARPRODUCTS_VIEW', true),
         );
     }
 
@@ -270,6 +270,7 @@ class Dspopularproducts extends Module
         }
 
         $this->context->smarty->assign('products', $productsData);
+        $this->context->smarty->assign('viewMode', Configuration::get('DSPOPULARPRODUCTS_VIEW'));
 
         return $this->display(__FILE__, 'displayHome.tpl');
     }
