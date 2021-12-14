@@ -28,6 +28,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+require 'vendor/autoload.php';
+
 class Dspopularproducts extends Module
 {
     protected $config_form = false;
@@ -116,7 +118,7 @@ class Dspopularproducts extends Module
 
         $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
 
-        return $output.$this->renderForm();
+        return $this->renderForm();
     }
 
     /**
@@ -161,35 +163,22 @@ class Dspopularproducts extends Module
                 'input' => array(
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Live mode'),
-                        'name' => 'DSPOPULARPRODUCTS_LIVE_MODE',
+                        'label' => $this->l('View mode'),
+                        'name' => 'DSPOPULARPRODUCTS_VIEW',
                         'is_bool' => true,
-                        'desc' => $this->l('Use this module in live mode'),
+                        'desc' => $this->l('Display products as'),
                         'values' => array(
                             array(
                                 'id' => 'active_on',
                                 'value' => true,
-                                'label' => $this->l('Enabled')
+                                'label' => $this->l('List')
                             ),
                             array(
                                 'id' => 'active_off',
                                 'value' => false,
-                                'label' => $this->l('Disabled')
+                                'label' => $this->l('Carousel')
                             )
                         ),
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
-                        'prefix' => '<i class="icon icon-envelope"></i>',
-                        'desc' => $this->l('Enter a valid email address'),
-                        'name' => 'DSPOPULARPRODUCTS_ACCOUNT_EMAIL',
-                        'label' => $this->l('Email'),
-                    ),
-                    array(
-                        'type' => 'password',
-                        'name' => 'DSPOPULARPRODUCTS_ACCOUNT_PASSWORD',
-                        'label' => $this->l('Password'),
                     ),
                 ),
                 'submit' => array(
@@ -205,9 +194,7 @@ class Dspopularproducts extends Module
     protected function getConfigFormValues()
     {
         return array(
-            'DSPOPULARPRODUCTS_LIVE_MODE' => Configuration::get('DSPOPULARPRODUCTS_LIVE_MODE', true),
-            'DSPOPULARPRODUCTS_ACCOUNT_EMAIL' => Configuration::get('DSPOPULARPRODUCTS_ACCOUNT_EMAIL', 'contact@prestashop.com'),
-            'DSPOPULARPRODUCTS_ACCOUNT_PASSWORD' => Configuration::get('DSPOPULARPRODUCTS_ACCOUNT_PASSWORD', null),
+            'DSPOPULARPRODUCTS_LIVE_MODE' => Configuration::get('DSPOPULARPRODUCTS_VIEW', true),
         );
     }
 
@@ -330,11 +317,13 @@ class Dspopularproducts extends Module
         $sql = new DbQuery;
         $sql->select('id')
             ->from('dspopularproducts')
-            ->where('id_product ='.$id_product);
+            ->where('id_product ='.$id_product)
+            ->limit(1);
 
         $result = Db::getInstance()->executeS($sql); 
+        $id = $result[0]['id'];
 
-        $dspopularproduct = new DSPopularProduct($result[0]['id']);
+        $dspopularproduct = new DSPopularProduct($id);
         $dspopularproduct->status = $status;
         $dspopularproduct->position = $position;
         $dspopularproduct->update();
@@ -345,9 +334,14 @@ class Dspopularproducts extends Module
     public function hookActionProductSave($params)
     {
         $id_product = $params['id_product'];
-
         $status = (int) Tools::getValue('dsppStatus');
-        $this->createPopularProduct($id_product, $status);
+        $dspopularproductId = $this->getDSPopularProductByIdProduct($id_product);
+
+        if ($dspopularproductId == false) {
+            $this->createPopularProduct($id_product, $status);
+        } else {
+            $this->updateData($id_product, $status);
+        }
     }
 
     public function hookActionProductUpdate($params)
@@ -358,12 +352,20 @@ class Dspopularproducts extends Module
         $this->updateData($id_product, $status);
     }
 
-    public function hookDisplayAdminProductsExtra($params)
+    public function hookdisplayAdminProductsExtra($params)
     {
-        $this->context->smarty->fetch($this->local_path.'views/templates/hook/displayAdminProductsExtra.tpl');
-    }
+        $id_product = $params['id_product'];
+        $dspopularproductId = $this->getDSPopularProductByIdProduct($id_product);
+        $dspopularproduct = $this->getDSPopularProduct($dspopularproductId);
+        $status = $dspopularproduct->status;
 
-    protected function getDSPopularProductByIdProduct(int $id_product): int
+        $this->context->smarty->assign('status', $status);
+
+        return $this->context->smarty->fetch($this->local_path.'views/templates/hook/displayAdminProductsExtra.tpl');
+    }
+    
+
+    protected function getDSPopularProductByIdProduct(int $id_product)
     {
         $sql = new DbQuery;
         $sql->select('id')
@@ -372,12 +374,21 @@ class Dspopularproducts extends Module
 
         $result = Db::getInstance()->executeS($sql); 
         
-        return $result[0]['id'];
+        if (!empty($result)) {
+            return (int) $result[0]['id'];
+        }
+
+        return false;
     }
 
     public function hookActionProductDelete($params)
     {
         $id_product = $params['id_product'];
         $this->deleteData($id_product);
+    }
+
+    protected function getDSPopularProduct(int $id): DSPopularProduct
+    {
+        return new DSPopularProduct($id);
     }
 }
