@@ -23,7 +23,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 <div class='card card-body mt-1 p-1'>
-    <h2 class='text-center h3'>{l s='Popular products' mods='dspopularproducts'}</h2>
+    <h2 class='text-center h3'>{l s='Popular products' mod='dspopularproducts'}</h2>
 
     {if $viewMode == false}
         <div class="owl-carousel owl-theme">
