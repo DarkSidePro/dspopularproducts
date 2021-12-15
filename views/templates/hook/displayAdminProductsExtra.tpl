@@ -22,12 +22,8 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
-<div class='form-group card card-body mt-1'>
-    <form method='POST'>
-        <label class="form-check-label">
-            <input type="hidden" name="dsppStatus" value="0">
-            <input type="checkbox" name="dsppStatus" value="1" {if $status == 1}checked{/if}>
-            {l s='Status' mod='dspopularproducts'}
-        </label>
-    </form>
-</div>
+<label class="form-check-label">
+    <input type="hidden" name="dsppStatus" value="0">
+    <input type="checkbox" name="dsppStatus" value="1" {if $status == 1}checked{/if}>
+    {l s='Status' mod='dspopularproducts'}
+</label>
